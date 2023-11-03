@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 enabled = true
 
 [project]
-name = "dicomtools"
+name = "dicomthings"
 authors = [
   { name="Jeroen Bertels", email="jeroen.bertels@gmail.com" },
 ]
@@ -21,4 +21,4 @@ classifiers = [
 dynamic = ["version"]
 
 [project.urls]
-"Homepage" = "https://github.com/JeroenBertels/dicomtools"
+"Homepage" = "https://github.com/JeroenBertels/dicomthings"
