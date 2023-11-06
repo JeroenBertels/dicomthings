@@ -20,8 +20,6 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-  "nibabel",
-  "pydicom",
   "dicom2nifti"
 ]
 
