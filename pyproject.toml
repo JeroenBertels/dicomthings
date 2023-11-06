@@ -14,11 +14,16 @@ description = "A Python library for working with DICOM files."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
 ]
 dynamic = ["version"]
+dependencies = [
+  "nibabel",
+  "pydicom",
+  "dicom2nifti"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/JeroenBertels/dicomthings"
