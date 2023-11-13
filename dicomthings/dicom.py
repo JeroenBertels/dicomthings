@@ -15,6 +15,7 @@ import dicom2nifti as d2n
 from pydicom.util.codify import code_file_from_dataset
 from datetime import datetime, timedelta
 from .utils import SortedDict, JsonDict
+from .nifti import reorient_nifti
 
 
 class DicomData(np.ndarray):
@@ -161,7 +162,7 @@ class DicomSeries(list):
         return DicomSeries.dicom_series_to_nifti(self, output_path=output_path, **dicom_series_to_nifti_kwargs)
 
     @ staticmethod
-    def dicom_series_to_nifti(dicom_series, output_path=None, resample=True, validate_orthogonality=False, validate_slice_increment=False, resample_padding=0):
+    def dicom_series_to_nifti(dicom_series, output_path=None, resample=True, validate_orthogonality=False, validate_slice_increment=False, resample_padding=0, output_orientation="LPS"):
         dicom_series = DicomSeries(dicom_series)
         if resample:
             d2n.enable_resampling()
@@ -181,7 +182,10 @@ class DicomSeries(list):
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
 
-        img = nib.as_closest_canonical(d2n.convert_dicom.dicom_array_to_nifti([dicom_file.read() for dicom_file in dicom_series], output_file=output_path)["NII"])
+        img = d2n.convert_dicom.dicom_array_to_nifti([dicom_file.read() for dicom_file in dicom_series], output_file=output_path)["NII"]
+        if output_orientation is not None:
+            img = reorient_nifti(img, output_orientation=output_orientation)
+
         assert d2n.common.is_orthogonal_nifti(img), "There is something wrong with the orthogonality!"
         if output_path == os.path.join(tmp_dir.name, "tmp_file.nii.gz"):
             tmp_dir.cleanup()
