@@ -13,6 +13,7 @@ import numpy as np
 import nibabel as nib
 import dicom2nifti as d2n
 from pydicom.util.codify import code_file_from_dataset
+from pydicom.tag import Tag
 from datetime import datetime, timedelta
 from .utils import SortedDict, JsonDict
 from .nifti import reorient_nifti
@@ -182,7 +183,22 @@ class DicomSeries(list):
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
 
-        img = d2n.convert_dicom.dicom_array_to_nifti([dicom_file.read() for dicom_file in dicom_series], output_file=output_path)["NII"]
+        dicom_files = [dicom_file.read() for dicom_file in dicom_series]
+        try:
+            img = d2n.convert_dicom.dicom_array_to_nifti(dicom_files, output_file=output_path)["NII"]
+        
+        except:
+            for dicom_file in dicom_files:
+                # workaround due to some CBCT imaging could not be loaded since values were None and in common.py only ValueError is catched for float(value) but with None giving TypeError
+                if Tag(0x0018, 0x0080) in dicom_file and Tag(0x0018, 0x0081) in dicom_file:
+                    if dicom_file.RepetitionTime is None:
+                        dicom_file.RepetitionTime = ""
+                    
+                    if dicom_file.EchoTime is None:
+                        dicom_file.EchoTime = ""
+
+            img = d2n.convert_dicom.dicom_array_to_nifti(dicom_files, output_file=output_path)["NII"]
+
         if output_orientation is not None:
             img = reorient_nifti(img, output_orientation=output_orientation)
 
