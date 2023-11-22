@@ -45,16 +45,17 @@ class JsonDict(SortedDict):
         with open(file_path, "w") as f:
             json.dump({k: json_dict[k] for k in json_dict}, f, indent=4, sort_keys=True, ensure_ascii=ensure_ascii)
 
-    @staticmethod
-    def load_json(file_path):
+    @classmethod
+    def load_json(cls, file_path):
         assert os.path.isfile(file_path), "The given file path does not exist."
-        d = SortedDict()
+        d = cls()
         with open(file_path, "r") as f:
             d_ = json.load(f)
             for k in list(d_.keys()):
                 d[k] = d_.pop(k)
         
         return d
+
 
 class DotNotationDict(SortedDict):
     """A SortedDict but the attributes can be accessed via dot notation also.
