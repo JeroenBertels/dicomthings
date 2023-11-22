@@ -55,3 +55,23 @@ class JsonDict(SortedDict):
                 d[k] = d_.pop(k)
         
         return d
+
+class DotNotationDict(SortedDict):
+    """A SortedDict but the attributes can be accessed via dot notation also.
+    """
+    
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+    def __setattr__(self, attr, value):
+        self.__setitem__(attr, value)
+
+    def __delattr__(self, attr):
+        self.__delitem__(attr)
+
+
+class DotJsonDict(JsonDict, DotNotationDict):
+    """Combination of a JsonDict and a DotNotationDict.
+    """
+    
+    pass
