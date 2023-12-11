@@ -1,5 +1,7 @@
 import nibabel as nib
+import numpy as np
 from scipy.ndimage import zoom, gaussian_filter
+from .array import downsample_array
 
 
 def reorient_nifti(image, output_orientation="LPS"):
@@ -22,50 +24,6 @@ def reorient_nifti(image, output_orientation="LPS"):
     ornt = nib.orientations.axcodes2ornt(nib.orientations.aff2axcodes(image.affine))
     ornt_ = nib.orientations.axcodes2ornt(output_orientation)
     return image.as_reoriented(nib.orientations.ornt_transform(ornt, ornt_))
-
-
-def downsample_array(input_array, window_sizes):
-    """Downsamples an input array using a sliding window and averaging over the window.
-
-    This function performs a sliding window with a stride equal to the window size over each dimension of the input array with the specified window size, and
-    then averages over the window to produce a single output value. If the size of the input array is not divisible by the
-    window size, the output array will be truncated to the largest integer size that is divisible by the window size.
-
-    Parameters
-    ----------
-    input_array : numpy.ndarray
-        Input array to be downsampled.
-    window_sizes : tuple or list of int
-        Window size for each dimension of the input array. If only one value is specified, the same window size is used
-        for all dimensions.
-
-    Returns
-    -------
-    output_array : numpy.ndarray
-        Downsampled array.
-
-    Raises
-    ------
-    AssertionError
-        If `window_sizes` is not a tuple or list, or if not all dimensions in the input array have a corresponding window
-        size being specified, or if any of the window sizes are not >= 1 integers.
-    """
-
-    if not isinstance(window_sizes, (tuple, list)):
-        window_sizes = [window_sizes] * len(input_array.shape)
-
-    assert len(input_array.shape) == len(window_sizes), "Not all dimensions in the input array have a corresponding window size being specified."
-    assert all([isinstance(window_size, int) and window_size >= 1 for window_size in window_sizes]), "Window sizes must be >= 1 integers."
-    output_shapes = []
-    tmp_shapes = []
-    for window_size, input_shape in zip(window_sizes, input_array.shape):
-        output_shape = input_shape if window_size == 1 else int(input_shape - input_shape % window_size)
-        output_shapes.append(output_shape)
-        tmp_shapes += [output_shape // window_size, window_size]
-
-    tmp_array = np.reshape(input_array[tuple([slice(output_shape) for output_shape in output_shapes])], tmp_shapes)
-    output_array = np.mean(tmp_array, tuple(range(1, len(tmp_shapes), 2)))
-    return output_array
 
 
 def resample_nifti(input_nii, output_zooms, order=3, prefilter=True, reference_nii=None):
