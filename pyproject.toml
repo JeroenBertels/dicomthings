@@ -12,7 +12,7 @@ authors = [
 ]
 description = "A Python library for working with DICOM files."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: Apache Software License",
