@@ -84,6 +84,9 @@ class DicomFile(object):
         new_dicom_file.file_path = file_path          
         return new_dicom_file
 
+    def get(self, tag):
+        return getattr(self, tag, self.dicom.get(tag, None))
+
     def get_datetime_file(self, tags=["Series", "Acquisition", "InstanceCreation", "Content"]):
         for tag in tags:
             try:
@@ -123,7 +126,11 @@ class DicomFile(object):
 
         if file_path is not None:
             self.write_dicom_file(file_path)
-
+    
+    @property
+    def orientation(self):
+        return self.get_orientation()
+    
     def get_orientation(self):  # https://stackoverflow.com/questions/70645577/translate-image-orientation-into-axial-sagittal-or-coronal-plane
         return DicomFile.image_ori_to_str(self.dicom.ImageOrientationPatient)
 
@@ -272,7 +279,7 @@ class DicomDirectory(SortedDict):
         sorted_directory = DicomDirectory()
         for subdir in self:
             for dicom_file in self[subdir]:
-                sorted_subdir = os.sep.join([str(dicom_file.dicom.get(tag, None)) for tag in tags])
+                sorted_subdir = os.sep.join([str(dicom_file.get(tag)) for tag in tags])
                 sorted_directory[sorted_subdir] = sorted_directory.get(sorted_subdir, []) + [dicom_file]
         
         if remove_duplicates:
