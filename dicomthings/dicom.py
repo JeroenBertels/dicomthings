@@ -14,9 +14,9 @@ import nibabel as nib
 import dicom2nifti as d2n
 from pydicom.util.codify import code_file_from_dataset
 from pydicom.tag import Tag
-from datetime import datetime, timedelta
-from .utils import SortedDict, JsonDict
-from .nifti import reorient_nifti
+from datetime import datetime
+from iothings import SortedDict, JsonDict
+from niftithings import reorient_nifti
 
 
 class DicomData(np.ndarray):
