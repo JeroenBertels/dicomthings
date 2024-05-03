@@ -8,7 +8,7 @@ enabled = true
 [project]
 name = "dicomthings"
 authors = [
-  { name="Jeroen Bertels", email="jeroen.bertels@gmail.com" },
+  {name="Jeroen Bertels", email="jeroen.bertels@gmail.com"},
 ]
 description = "A Python library for working with DICOM files."
 readme = "README.md"
@@ -20,7 +20,12 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-  "dicom2nifti"
+  "numpy",
+  "nibabel",
+  "pydicom",
+  "dicom2nifti",
+  "niftithings",
+  "iothings"
 ]
 
 [project.urls]
