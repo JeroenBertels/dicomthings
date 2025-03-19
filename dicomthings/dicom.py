@@ -16,7 +16,7 @@ from pydicom.util.codify import code_file_from_dataset
 from pydicom.tag import Tag
 from datetime import datetime
 from iothings import SortedDict, JsonDict
-from niftithings import reorient_nifti, orthogonalize_nifti, is_orthogonal_affine
+from niftithings import reorient_nifti, orthogonalize_nifti, is_orthogonal_affine, get_angles_between_axes
 
 
 class DicomData(np.ndarray):
@@ -170,7 +170,7 @@ class DicomSeries(list):
         return DicomSeries.dicom_series_to_nifti(self, output_path=output_path, **dicom_series_to_nifti_kwargs)
 
     @ staticmethod
-    def dicom_series_to_nifti(dicom_series, output_path=None, resample=True, validate_orthogonality=False, validate_slice_increment=False, resample_padding=0, output_orientation="LPS"):
+    def dicom_series_to_nifti(dicom_series, output_path=None, resample=True, validate_orthogonality=False, validate_slice_increment=False, resample_padding=0, output_orientation="LPS", orthogonality_discrepancy=(1, 1, 1)):
         dicom_series = DicomSeries(dicom_series)
         if resample:
             d2n.enable_resampling()
@@ -210,10 +210,10 @@ class DicomSeries(list):
             img = reorient_nifti(img, output_orientation=output_orientation)
 
         assert d2n.common.is_orthogonal_nifti(img), "There is something wrong with the orthogonality!"
-        if resample and not is_orthogonal_affine(img.affine):
-            print("dicom2nifti orthogonal check failed, we go via niftithings instead")
+        if resample and not is_orthogonal_affine(img.affine, max_allowed_angles_in_degrees=orthogonality_discrepancy):
+            print("dicom2nifti orthogonal check failed, we go via niftithings instead with axes angles:", get_angles_between_axes(img.affine))
             img = orthogonalize_nifti(img, resample_padding=resample_padding)
-            assert is_orthogonal_affine(img.affine), "There is something very much wrong with the orthogonality!"
+            assert is_orthogonal_affine(img.affine, max_allowed_angles_in_degrees=orthogonality_discrepancy), "There is something very much wrong with the orthogonality!"
 
         if output_path == os.path.join(tmp_dir.name, "tmp_file.nii.gz"):
             tmp_dir.cleanup()
