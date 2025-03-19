@@ -16,7 +16,7 @@ from pydicom.util.codify import code_file_from_dataset
 from pydicom.tag import Tag
 from datetime import datetime
 from iothings import SortedDict, JsonDict
-from niftithings import reorient_nifti
+from niftithings import reorient_nifti, orthogonalize_nifti, is_orthogonal_affine
 
 
 class DicomData(np.ndarray):
@@ -210,6 +210,11 @@ class DicomSeries(list):
             img = reorient_nifti(img, output_orientation=output_orientation)
 
         assert d2n.common.is_orthogonal_nifti(img), "There is something wrong with the orthogonality!"
+        if resample and not is_orthogonal_affine(img.affine):
+            print("dicom2nifti orthogonal check failed, we go via niftithings instead")
+            img = orthogonalize_nifti(img, resample_padding=resample_padding)
+            assert is_orthogonal_affine(img.affine), "There is something very much wrong with the orthogonality!"
+
         if output_path == os.path.join(tmp_dir.name, "tmp_file.nii.gz"):
             tmp_dir.cleanup()
         
