@@ -34,6 +34,7 @@ class DicomFile(object):
 
     Can be instantiated from a file path or a Pydicom Dataset directly.
     """
+    EMPTY_TYPES = [None, b"", "", []]  # empty types according to https://pydicom.github.io/pydicom/stable/tutorials/dataset_basics.html#modifying
     def __init__(self, file_path_or_pydicom_dataset, **dcmread_kwargs):
         if isinstance(file_path_or_pydicom_dataset, DicomFile):
             self.file_path = file_path_or_pydicom_dataset.file_path
@@ -84,8 +85,13 @@ class DicomFile(object):
         new_dicom_file.file_path = file_path          
         return new_dicom_file
 
-    def get(self, tag):
-        return getattr(self, tag, self.dicom.get(tag, None))
+    def get(self, tag, default=None, return_empty_types_as_none=True):
+        value = getattr(self, tag, self.dicom.get(tag, default))
+        if return_empty_types_as_none and value in self.EMPTY_TYPES:
+            return None
+
+        else:
+            return value
 
     def get_datetime_file(self, tags=["Series", "Acquisition", "InstanceCreation", "Content"]):
         for tag in tags:
@@ -275,6 +281,13 @@ class DicomDirectory(SortedDict):
                         continue
             
             if len(dicom_files) > 0:
+                if subdir == self.root_dir:
+                    subdir = ""
+                
+                else:
+                    root_dir = os.path.normpath(self.root_dir)  # deletes trailing / if any
+                    subdir = subdir[len(root_dir) + 1:]
+
                 self[subdir] = dicom_files
         
         if not self.is_sorted_into_series():
@@ -354,7 +367,7 @@ class DicomDirectory(SortedDict):
         assert self.root_dir is not None and self.root_dir != "", "To reroot a DicomDirectory the root_dir attribute must be specified."
         rerooted_directory = DicomDirectory()
         for subdir in self:
-            rerooted_directory[subdir.replace(self.root_dir, root_dir)] = self[subdir]
+            rerooted_directory[subdir] = self[subdir]
 
         rerooted_directory.root_dir = root_dir
         return rerooted_directory
@@ -369,7 +382,7 @@ class DicomDirectory(SortedDict):
                 else:
                     file_name = f"dicom_{i}.dcm"
 
-                dicom_file.write(file_path=os.path.join(self.root_dir, file_name), **dicomfile_write_kwargs)
+                dicom_file.write(file_path=os.path.join(self.root_dir, subdir, file_name), **dicomfile_write_kwargs)
 
     def print_structure(self):
         for key in sorted(self.keys()):
