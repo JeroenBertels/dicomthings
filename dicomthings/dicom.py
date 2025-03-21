@@ -132,7 +132,7 @@ class DicomFile(object):
         return self.get_orientation()
     
     def get_orientation(self):  # https://stackoverflow.com/questions/70645577/translate-image-orientation-into-axial-sagittal-or-coronal-plane
-        return DicomFile.image_ori_to_str(self.dicom.ImageOrientationPatient)
+        return DicomFile.image_ori_to_str(self.get("ImageOrientationPatient"))
 
     @staticmethod
     def image_ori_to_str(image_ori):
